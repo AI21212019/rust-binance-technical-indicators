@@ -137,7 +137,31 @@ let mut line2_data: Vec<(Date<Local>, f64)> = Vec::new();
         histo_data.push((time_data[i].0, macd_data.macd[i] as f64));
     }
 
-     println!("MACD_plot: {:?}", histo_data[0]);
+    println!("MACD_plot: {:?}", histo_data[0]);
+
+    let typical_price_data: Vec<f64> = kline_data
+    .iter()
+    .rev()
+    .take(100)
+    .map(|f| (f.high + f.low + f.close) / 3.0)
+    .collect();
+let result = statistics::bollinger_bands(&typical_price_data, 20, 2.0);
+
+let boll_data = match result {
+    Some(data) => data,
+        _ => panic!("Calculating BOLL failed"),
+    };
+
+    println!("BOLL_UPPER_BOUND: {:?}", boll_data.upper_bound[0]);
+
+    let result = statistics::relative_strength_index(&price_data, 14);
+
+    let rsi_data = match result {
+        Some(data) => data,
+        _ => panic!("Calculating RSI failed"),
+    };
+
+    println!("RSI: {:?}", rsi_data[0]);
 
         
 

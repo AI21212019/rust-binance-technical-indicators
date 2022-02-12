@@ -88,5 +88,84 @@ fn test_moving_average_convergence_divergence() {
     );
     }   
 
-    
+    #[test]
+fn test_bollinger_bands() {
+    let data_set = vec![
+        5.0, 6.0, 4.0, 2.0, 1.5, 1.0, 2.0, 3.0, 3.5, 3.5, 4.0, 4.5, 5.0,
+    ];
+
+    let result = bollinger_bands(&data_set, 20, 2.0);
+    assert_eq!(None, result);
+
+    let result = bollinger_bands(&data_set, 8, 2.0).unwrap();
+
+    assert_eq!(6, result.middle_bound.len());
+    assert_eq!(
+        vec![3.0625, 2.875, 2.5625, 2.5625, 2.875, 3.3125],
+        result.middle_bound
+    );
+
+    assert_eq!(6, result.upper_bound.len());
+    assert_eq!(
+        vec![
+            6.395572906493346,
+            5.906088913245535,
+            4.589659342528357,
+            4.589659342528357,
+            5.206844763272204,
+            5.758798223847616
+        ],
+        result.upper_bound
+    );
+
+    assert_eq!(6, result.lower_bound.len());
+    assert_eq!(
+        vec![
+            -0.27057290649334576,
+            -0.1560889132455352,
+            0.535340657471643,
+            0.535340657471643,
+            0.5431552367277961,
+            0.8662017761523844
+        ],
+        result.lower_bound
+    );
+    }
+
+    #[test]
+fn test_relative_strength_index() {
+    let data_set = vec![
+        5.0, 6.0, 4.0, 2.0, 1.5, 1.0, 2.0, 3.0, 3.5, 3.5, 4.0, 4.5, 5.0,
+    ];
+
+    let result = relative_strength_index(&data_set, 14);
+    assert_eq!(None, result);
+
+    let result = relative_strength_index(&data_set, 8).unwrap();
+
+    assert_eq!(5, result.len());
+    assert_eq!(
+        vec![
+            56.852791878172596,
+            56.852791878172596,
+            59.17295654731064,
+            61.256328819550575,
+            63.16578540011347
+        ],
+        result
+    );
+
+    let data_set = vec![
+        44.34, 44.09, 44.15, 43.61, 44.33, 44.83, 45.10, 45.42, 45.84, 46.08, 45.89, 46.03,
+        45.61, 46.28, 46.28, 46.00, 46.03,
+    ];
+
+    let result = relative_strength_index(&data_set, 14).unwrap();
+
+    assert_eq!(3, result.len());
+    assert_eq!(
+        vec![70.53539393736207, 66.436571546019, 66.66146763681454],
+        result
+    );
+    }
 }
