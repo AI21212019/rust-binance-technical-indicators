@@ -24,15 +24,6 @@ async fn main() {
     };
     println!("first result: {:?}", kline_data[0]);
 
-    let price_data: Vec<f64> = kline_data.iter().rev().take(100).map(|f| f.close).collect();
-    let result = statistics::simple_moving_average(&price_data, 26);
-
-    let sma_data = match result {
-        Some(data) => data,
-        _ => panic!("Calculating SMA failed"),
-    };
-
-    println!("SMA: {:?}", sma_data[0]);
 
     let dir = "plots-output";
     let filepath = format!("{}/sma15.png", &dir);
@@ -70,7 +61,7 @@ async fn main() {
         .unwrap();
 
     chart
-        .draw_series(time_data.iter().rev().take(100).map(|x| {
+        .draw_series(time_data.iter().map(|x| {
             CandleStick::new(
                 x.0,
                 x.1,
@@ -83,6 +74,29 @@ async fn main() {
             )
         }))
         .unwrap();
+
+    let price_data: Vec<f64> = kline_data.iter().rev().take(100).map(|x| x.close).collect();
+    let result = statistics::simple_moving_average(&price_data, 26);
+
+    let sma_data = match result {
+        Some(data) => data,
+        _ => panic!("Calculating SMA failed"),
+    };
+
+    println!("SMA: {:?}", sma_data[0]);
+
+    let mut line_data: Vec<(Date<Local>, f64)> = Vec::new();
+    for i in 0..sma_data.len() {
+        line_data.push((time_data[i].0, sma_data[i] as f64));
+    }
+
+    println!("SMA: {:?}", line_data[0]);
+
+    chart
+        .draw_series(LineSeries::new(line_data, BLUE.stroke_width(2)))
+        .unwrap()
+        .label("SMA 15")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &BLUE));
 
     root.present().expect(&format!("Unable to write result to file please make sure directory '{}' exists under the current dir", &dir));
 
