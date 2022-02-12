@@ -49,7 +49,7 @@ async fn main() {
         .x_label_area_size(60)
         .y_label_area_size(60)
         .caption(
-            "Candles + simple moving average",
+            "Candles + technical indicators",
             ("sans-serif", 50.0).into_font(),
         )
         .build_cartesian_2d(start_date..end_date, 30000f64..80000f64)
@@ -96,17 +96,17 @@ async fn main() {
     chart
         .draw_series(LineSeries::new(line_data, BLUE.stroke_width(2)))
         .unwrap()
-        .label("SMA 15")
+        .label("SMA 26")
         .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &BLUE));
 
     
 
     let result = statistics::exponential_moving_average(&price_data, 26);
 
-let ema_data = match result {
-    Some(data) => data,
-    _ => panic!("Calculating EMA failed"),
-};
+    let ema_data = match result {
+        Some(data) => data,
+        _ => panic!("Calculating EMA failed"),
+    };
 
 println!("EMA: {:?}", ema_data[0]);
 
@@ -120,8 +120,34 @@ let mut line2_data: Vec<(Date<Local>, f64)> = Vec::new();
     chart
         .draw_series(LineSeries::new(line2_data, GREEN.stroke_width(2)))
         .unwrap()
-        .label("EMA 15")
+        .label("EMA 26")
         .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &GREEN));
+
+    let result = statistics::moving_average_convergence_divergence(&price_data, 12, 26, 9);
+
+    let macd_data = match result {
+        Some(data) => data,
+        _ => panic!("Calculating MACD failed"),
+        };
+
+    println!("MACD: {:?} {:?}", macd_data.macd[0], macd_data.signal[0]);
+
+    let mut histo_data: Vec<(Date<Local>, f64)> = Vec::new();
+    for i in 0..macd_data.macd.len() {
+        histo_data.push((time_data[i].0, macd_data.macd[i] as f64));
+    }
+
+     println!("MACD_plot: {:?}", histo_data[0]);
+
+        
+
+    chart
+        .configure_series_labels()
+        .position(SeriesLabelPosition::UpperMiddle)
+        .label_font(("sans-serif", 30.0).into_font())
+        .background_style(WHITE.filled())
+        .draw()
+        .unwrap();
 
         root.present().expect(&format!("Unable to write result to file please make sure directory '{}' exists under the current dir", &dir));
 
