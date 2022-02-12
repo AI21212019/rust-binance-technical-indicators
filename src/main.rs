@@ -1,3 +1,4 @@
+
 use chrono::prelude::*;
 use chrono::Duration;
 use plotters::prelude::*;
@@ -90,7 +91,7 @@ async fn main() {
         line_data.push((time_data[i].0, sma_data[i] as f64));
     }
 
-    println!("SMA: {:?}", line_data[0]);
+    println!("SMA_plot: {:?}", line_data[0]);
 
     chart
         .draw_series(LineSeries::new(line_data, BLUE.stroke_width(2)))
@@ -98,7 +99,31 @@ async fn main() {
         .label("SMA 15")
         .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &BLUE));
 
-    root.present().expect(&format!("Unable to write result to file please make sure directory '{}' exists under the current dir", &dir));
+    
+
+    let result = statistics::exponential_moving_average(&price_data, 26);
+
+let ema_data = match result {
+    Some(data) => data,
+    _ => panic!("Calculating EMA failed"),
+};
+
+println!("EMA: {:?}", ema_data[0]);
+
+let mut line2_data: Vec<(Date<Local>, f64)> = Vec::new();
+    for i in 0..ema_data.len() {
+        line2_data.push((time_data[i].0, ema_data[i] as f64));
+    }
+
+    println!("EMA_plot: {:?}", line2_data[0]);
+
+    chart
+        .draw_series(LineSeries::new(line2_data, GREEN.stroke_width(2)))
+        .unwrap()
+        .label("EMA 15")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &GREEN));
+
+        root.present().expect(&format!("Unable to write result to file please make sure directory '{}' exists under the current dir", &dir));
 
     println!("Plot has been saved to {}", &filepath);
     
